@@ -2,3 +2,4 @@ data/
 logs/
 target/
 .DS_Store
+count.txt
