@@ -87,7 +87,7 @@ public class Remtter {
 					// create direct message
 					int messageCount = 0;
 					while (messageCount < remNameList.size()) {
-						String endText = " さんがリムってるみたい";
+						String endText = "がリムってるみたい";
 						StringBuilder messageBuf = new StringBuilder();
 						for (; messageCount < remNameList.size(); messageCount++) {
 							if ((messageBuf.length()
