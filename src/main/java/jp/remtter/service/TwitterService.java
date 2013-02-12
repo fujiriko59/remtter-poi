@@ -209,8 +209,6 @@ public class TwitterService {
 
 				followerIdsList = followerIdsResponse.getUserIdList();
 
-				logger.debug(followerIdsList.toString());
-
 				counter += 5000;
 
 				String tmpStr = followerIdsResponse.getNextCursorStr();

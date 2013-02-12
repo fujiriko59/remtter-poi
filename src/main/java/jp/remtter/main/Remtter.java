@@ -96,7 +96,9 @@ public class Remtter {
 								messageCount--;
 								break;
 							}
+							messageBuf.append("@");
 							messageBuf.append(remNameList.get(messageCount));
+							messageBuf.append(" さん ");
 						}
 
 						if (messageCount >= remNameList.size()) {
