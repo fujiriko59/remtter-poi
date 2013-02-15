@@ -22,12 +22,12 @@ import oauth.signpost.http.HttpParameters;
 import jp.remtter.util.LogUtil;
 
 public class TwitterService {
+	// Twitter Rest Api
 	public String userTimelineUrl = "https://api.twitter.com/1.1/statuses/user_timeline.json";
-
-	// getFollower
 	public String followerUrl = "https://api.twitter.com/1.1/followers/ids.json";
 	public String lookupUrl = "https://api.twitter.com/1.1/users/lookup.json";
 	public String directMessageUrl = "https://api.twitter.com/1.1/direct_messages/new.json";
+	public String followUrl = "https://api.twitter.com/1.1/friendships/create.json";
 
 	private String userId;
 	private String screenName;
@@ -57,9 +57,10 @@ public class TwitterService {
 	}
 
 	public List<Map<String, String>> getUserTimeline(int maxnum)
-			throws APILimitException {
+			throws APILimitException, UnAuthorizedException {
 		List<Map<String, String>> dtoList = new ArrayList<Map<String, String>>();
-
+		HttpURLConnection con = null;
+		
 		try {
 			OAuthConsumer consumer = new DefaultOAuthConsumer(consumerKey,
 					consumerSecret);
@@ -78,7 +79,7 @@ public class TwitterService {
 
 				// HTTPリクエスト
 				URL url = new URL(urlStr.toString());
-				HttpURLConnection con = (HttpURLConnection) url
+				con = (HttpURLConnection) url
 						.openConnection();
 				con.setRequestMethod("GET");
 
@@ -86,7 +87,8 @@ public class TwitterService {
 				consumer.sign(con);
 
 				// con.connect();
-				logger.debug("getUserTimeline response: " + con.getResponseCode() + " "
+				logger.debug("getUserTimeline response: "
+						+ con.getResponseCode() + " "
 						+ con.getResponseMessage());
 
 				BufferedReader reader = new BufferedReader(
@@ -101,6 +103,7 @@ public class TwitterService {
 
 				reader.close();
 				con.disconnect();
+				con = null;
 
 				List<Map<String, String>> pojoList = JSON.decode(json,
 						List.class);
@@ -140,10 +143,22 @@ public class TwitterService {
 
 		} catch (Exception e) {
 			dtoList = null;
-			if (getResponseCode(e.getMessage()) == 429) {
+			int respCode = 0;
+			try {
+				if (con != null) {
+					respCode = con.getResponseCode();
+					con.disconnect();
+				}
+			} catch(Exception e2) {
+				logger.warn(e2.getMessage());
+			}
+			
+			if (respCode == 429) {
 				throw new APILimitException(e.getMessage());
+			} else if (respCode == 401) {
+				throw new UnAuthorizedException(e.getMessage());
 			} else {
-				//e.printStackTrace();
+				// e.printStackTrace();
 				logger.warn(e.getMessage());
 			}
 		}
@@ -152,8 +167,9 @@ public class TwitterService {
 	}
 
 	public List<String> getFollowerIds(String userId, int maxnum)
-			throws APILimitException {
+			throws APILimitException, UnAuthorizedException {
 		List<String> followerIdsList = new ArrayList<String>();
+		HttpURLConnection con = null;
 		try {
 			String nextCursor = "";
 			int counter = 0;
@@ -180,16 +196,15 @@ public class TwitterService {
 
 				// HTTPリクエスト
 				URL url = new URL(urlStr.toString());
-				HttpURLConnection con = (HttpURLConnection) url
-						.openConnection();
+				con = (HttpURLConnection) url.openConnection();
 				con.setRequestMethod("GET");
 
 				// 著名
 				consumer.sign(con);
 
 				// con.connect();
-				logger.debug("getFollowerIds response:" + con.getResponseCode() + " "
-						+ con.getResponseMessage());
+				logger.debug("getFollowerIds response:" + con.getResponseCode()
+						+ " " + con.getResponseMessage());
 
 				BufferedReader reader = new BufferedReader(
 						new InputStreamReader(con.getInputStream()));
@@ -203,6 +218,7 @@ public class TwitterService {
 
 				reader.close();
 				con.disconnect();
+				con = null;
 
 				FollowerIdsResponseJSON followerIdsResponse = JSON.decode(json,
 						FollowerIdsResponseJSON.class);
@@ -221,11 +237,22 @@ public class TwitterService {
 			}
 		} catch (Exception e) {
 			followerIdsList = null;
-			
-			if (getResponseCode(e.getMessage()) == 429) {
+			int respCode = 0;
+			try {
+				if (con != null) {
+					respCode = con.getResponseCode();
+					con.disconnect();
+				}
+			} catch(Exception e2) {
+				logger.warn(e2.getMessage());
+			}
+
+			if (respCode == 429) {
 				throw new APILimitException(e.getMessage());
+			} else if (respCode == 401) {
+				throw new UnAuthorizedException(e.getMessage());
 			} else {
-				//e.printStackTrace();
+				// e.printStackTrace();
 				logger.warn(e.getMessage());
 			}
 		}
@@ -234,9 +261,9 @@ public class TwitterService {
 	}
 
 	public List<Map<String, String>> lookupUsers(List<String> idsList)
-			throws APILimitException {
+			throws APILimitException, UnAuthorizedException {
 		List<Map<String, String>> userInfoList = new ArrayList<Map<String, String>>();
-
+		HttpURLConnection con = null;
 		try {
 			int userCount = 0;
 			while (true) {
@@ -263,16 +290,15 @@ public class TwitterService {
 
 				// HTTPリクエスト
 				URL url = new URL(urlStr.toString());
-				HttpURLConnection con = (HttpURLConnection) url
-						.openConnection();
+				con = (HttpURLConnection) url.openConnection();
 				con.setRequestMethod("GET");
 
 				// 著名
 				consumer.sign(con);
 
 				// con.connect();
-				logger.debug("lookupUsers response: " + con.getResponseCode() + " "
-						+ con.getResponseMessage());
+				logger.debug("lookupUsers response: " + con.getResponseCode()
+						+ " " + con.getResponseMessage());
 
 				BufferedReader reader = new BufferedReader(
 						new InputStreamReader(con.getInputStream()));
@@ -286,7 +312,6 @@ public class TwitterService {
 
 				reader.close();
 				con.disconnect();
-
 
 				List<Map<String, String>> lookupResponseList = JSON.decode(
 						json, List.class);
@@ -305,18 +330,30 @@ public class TwitterService {
 						}
 					}
 				}
-				
+
 				if (userCount >= idsList.size()) {
 					break;
 				}
 			}
 		} catch (Exception e) {
+			int respCode = 0;
+			try {
+				if (con != null) {
+					respCode = con.getResponseCode();
+					con.disconnect();
+				}
+			} catch(Exception e2) {
+				logger.warn(e2.getMessage());
+			}
+
 			userInfoList = null;
-			if (getResponseCode(e.getMessage()) == 429) {
+			if (respCode == 429) {
 				throw new APILimitException(e.getMessage());
+			} else if (respCode == 401) {
+				throw new UnAuthorizedException(e.getMessage());
 			} else {
-				//e.printStackTrace();
 				logger.warn(e.getMessage());
+
 			}
 		}
 
@@ -324,7 +361,7 @@ public class TwitterService {
 	}
 
 	public void sendDirectMessage(String toUserId, String message)
-			throws APILimitException {
+			throws APILimitException, UnAuthorizedException {
 		if (message.length() > 140) {
 			return;
 		}
@@ -358,8 +395,73 @@ public class TwitterService {
 			printWriter.close();
 
 			// con.connect();
-			
-			logger.debug("sendDirectMessage response: " + con.getResponseCode() + " "
+
+			logger.debug("sendDirectMessage response: " + con.getResponseCode()
+					+ " " + con.getResponseMessage());
+
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					con.getInputStream()));
+
+			String json = "";
+			String line;
+
+			while ((line = reader.readLine()) != null) {
+				json += line;
+			}
+
+			con.disconnect();
+
+		} catch (Exception e) {
+			int respCode = 0;
+			try {
+				if (con != null) {
+					respCode = con.getResponseCode();
+					con.disconnect();
+				}
+			} catch (Exception e2) {
+				logger.warn(e2.getMessage());
+			}
+
+			if (respCode == 429) {
+				throw new APILimitException(e.getMessage());
+			} else if (respCode == 401) {
+				throw new UnAuthorizedException(e.getMessage());
+			} else {
+				// e.printStackTrace();
+				logger.warn(e.getMessage());
+			}
+		}
+	}
+
+	public void followUser(String userId) throws APILimitException,
+			UnAuthorizedException {
+		HttpURLConnection con = null;
+		try {
+			OAuthConsumer consumer = new DefaultOAuthConsumer(consumerKey,
+					consumerSecret);
+
+			consumer.setTokenWithSecret(accessToken, accessSecret);
+
+			String parameterString = "user_id=" + userId + "&follow=true";
+
+			HttpParameters hp = new HttpParameters();
+			hp.put("user_id", userId);
+			hp.put("follow", "true");
+
+			URL url = new URL(followUrl);
+
+			con = (HttpURLConnection) url.openConnection();
+			con.setDoOutput(true);
+			con.setRequestMethod("POST");
+			consumer.setAdditionalParameters(hp);
+			consumer.sign(con);
+
+			PrintWriter printWriter = new PrintWriter(con.getOutputStream());
+			printWriter.print(parameterString);
+			printWriter.close();
+
+			// con.connect();
+			logger.debug("followUser response: " + con.getResponseCode() + " "
 					+ con.getResponseMessage());
 
 			BufferedReader reader = new BufferedReader(new InputStreamReader(
@@ -372,38 +474,31 @@ public class TwitterService {
 				json += line;
 			}
 
+			reader.close();
+			con.disconnect();
 		} catch (Exception e) {
-			if (getResponseCode(e.getMessage()) == 429) {
+			int respCode = 0;
+			try {
+				if (con != null) {
+					respCode = con.getResponseCode();
+					con.disconnect();
+				}
+			} catch (Exception e2) {
+				logger.warn(e2.getMessage());
+			}
+			e.printStackTrace();
+			if (respCode == 429) {
 				throw new APILimitException(e.getMessage());
+			} else if (respCode == 401) {
+				throw new UnAuthorizedException(e.getMessage());
 			} else {
-				//e.printStackTrace();
+				// e.printStackTrace();
 				logger.warn(e.getMessage());
 			}
-		} finally {
-			try {
-				con.disconnect();
-			} catch (Exception e) {
-
-			}
 		}
 	}
 
-	private int getResponseCode(String message) {
-		int start = message.indexOf("HTTP response code: ");
-		int end = message.indexOf(" for ");
-
-		if (start == -1 || end == -1 || start > end) {
-			return -1;
-		}
-
-		String codeStr = message.substring(
-				start + "HTTP response code: ".length(), end);
-		
-		//logger.debug("IOException code:" + codeStr + "  original message: " + message);
-		
-		return Integer.parseInt(codeStr);
-	}
-
+	
 	// inner class
 	public static class FollowerIdsResponseJSON {
 		private List<String> idsList;
@@ -438,6 +533,12 @@ public class TwitterService {
 		public APILimitException(String message) {
 			super(message);
 			this.message = message;
+		}
+	}
+
+	public static class UnAuthorizedException extends Exception {
+		public UnAuthorizedException(String message) {
+			super(message);
 		}
 	}
 }
