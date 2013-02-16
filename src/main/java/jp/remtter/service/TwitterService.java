@@ -182,8 +182,10 @@ public class TwitterService {
 				}
 
 				StringBuilder urlStr = new StringBuilder();
-				urlStr.append(followerUrl + "?count=" + idsCount + "&user_id="
-						+ userId);
+				urlStr.append(followerUrl + "?count=" + idsCount);
+				if(userId.length()>0) {
+					urlStr.append("&user_id=" + userId);
+				}
 
 				if (nextCursor.length() > 0) {
 					urlStr.append("&cursor=" + nextCursor);

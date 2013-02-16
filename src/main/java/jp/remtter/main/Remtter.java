@@ -57,16 +57,21 @@ public class Remtter {
 					prop.getProperty("accessSecret"));
 
 			// get crawler properties
-			// TODO アカウント何個でも設定出来るようにしたい
-			Map<String, String> map = new HashMap<String, String>();
-			map.put("accessToken", prop.getProperty("crawler1.accessToken"));
-			map.put("accessSecret", prop.getProperty("crawler1.accessSecret"));
-			crawlerAcountList.add(map);
+			int count = 1;
+			while (true) {
+				String tokenStr = "crawler" + count + ".accessToken";
+				String secretStr = "crawler" + count + ".accessSecret";
 
-			map = new HashMap<String, String>();
-			map.put("accessToken", prop.getProperty("crawler2.accessToken"));
-			map.put("accessSecret", prop.getProperty("crawler2.accessSecret"));
-			crawlerAcountList.add(map);
+				if (prop.getProperty(tokenStr) == null) {
+					break;
+				}
+
+				Map<String, String> map = new HashMap<String, String>();
+				map.put("accessToken", prop.getProperty(tokenStr));
+				map.put("accessSecret", prop.getProperty(secretStr));
+				crawlerAcountList.add(map);
+				count++;
+			}
 
 			followerDataDir = prop.getProperty("followerDataDir");
 			countFilePath = prop.getProperty("countFilePath");
@@ -95,7 +100,8 @@ public class Remtter {
 		List<String> remtterFollowerIds = null;
 		try {
 
-			remtterFollowerIds = twitterService.getFollowerIds("", 100000);
+			remtterFollowerIds = twitterService.getFollowerIds(
+					remtterAcountMap.get("remtterUserId"), 100000);
 
 			if (remtterFollowerIds == null) {
 				return;
@@ -147,13 +153,16 @@ public class Remtter {
 				} catch (TwitterService.UnAuthorizedException e) {
 					// TODO remtterじゃないアカウントで401なったときの対応
 					logger.info("UnAuthorized -> " + userId);
+					if(crawlerAcountList.get(crawlerCount).get("accessToken").equals(
+							remtterAcountMap.get("accessToken"))) {
 					try {
 						logger.info("Send follow request -> " + userId);
 						setRemtterToken();
 						twitterService.followUser(userId);
 						setCrawlerToken(crawlerCount);
 					} catch (Exception e2) {
-						logger.warn(e2.getMessage());
+							logger.warn(e2.getMessage());
+						}
 					}
 					continue;
 				}
