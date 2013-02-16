@@ -153,14 +153,14 @@ public class Remtter {
 				} catch (TwitterService.UnAuthorizedException e) {
 					// TODO remtterじゃないアカウントで401なったときの対応
 					logger.info("UnAuthorized -> " + userId);
-					if(crawlerAcountList.get(crawlerCount).get("accessToken").equals(
-							remtterAcountMap.get("accessToken"))) {
-					try {
-						logger.info("Send follow request -> " + userId);
-						setRemtterToken();
-						twitterService.followUser(userId);
-						setCrawlerToken(crawlerCount);
-					} catch (Exception e2) {
+					if (crawlerAcountList.get(crawlerCount).get("accessToken")
+							.equals(remtterAcountMap.get("accessToken"))) {
+						try {
+							logger.info("Send follow request -> " + userId);
+							setRemtterToken();
+							twitterService.followUser(userId);
+							setCrawlerToken(crawlerCount);
+						} catch (Exception e2) {
 							logger.warn(e2.getMessage());
 						}
 					}
@@ -219,7 +219,7 @@ public class Remtter {
 						try {
 							setRemtterToken();
 							twitterService.sendDirectMessage(
-									remtterFollowerIds.get(count),
+									userId,
 									messageBuf.toString());
 							setCrawlerToken(crawlerCount);
 						} catch (TwitterService.APILimitException e) {
