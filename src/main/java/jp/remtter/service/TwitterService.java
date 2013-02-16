@@ -29,8 +29,6 @@ public class TwitterService {
 	public String directMessageUrl = "https://api.twitter.com/1.1/direct_messages/new.json";
 	public String followUrl = "https://api.twitter.com/1.1/friendships/create.json";
 
-	private String userId;
-	private String screenName;
 	private String consumerKey;
 	private String consumerSecret;
 	private String accessToken;
@@ -38,10 +36,9 @@ public class TwitterService {
 
 	private LogUtil logger = new LogUtil(TwitterService.class);
 
-	public void setToken(String screenName, String consumerKey,
-			String consumerSecret, String accessToken, String accessSecret) {
+	public void setToken(String consumerKey, String consumerSecret,
+			String accessToken, String accessSecret) {
 
-		this.screenName = screenName;
 		this.consumerKey = consumerKey;
 		this.consumerSecret = consumerSecret;
 		this.accessToken = accessToken;
@@ -60,7 +57,7 @@ public class TwitterService {
 			throws APILimitException, UnAuthorizedException {
 		List<Map<String, String>> dtoList = new ArrayList<Map<String, String>>();
 		HttpURLConnection con = null;
-		
+
 		try {
 			OAuthConsumer consumer = new DefaultOAuthConsumer(consumerKey,
 					consumerSecret);
@@ -71,16 +68,14 @@ public class TwitterService {
 			int tweetCnt = 0;
 			while (tweetCnt < maxnum && length < 11000) {
 				StringBuilder urlStr = new StringBuilder();
-				urlStr.append(userTimelineUrl + "?count=200&screen_name="
-						+ screenName);
+				urlStr.append(userTimelineUrl + "?count=200");
 				if (id > 0) {
 					urlStr.append("&max_id=" + id);
 				}
 
 				// HTTPリクエスト
 				URL url = new URL(urlStr.toString());
-				con = (HttpURLConnection) url
-						.openConnection();
+				con = (HttpURLConnection) url.openConnection();
 				con.setRequestMethod("GET");
 
 				// 著名
@@ -149,10 +144,10 @@ public class TwitterService {
 					respCode = con.getResponseCode();
 					con.disconnect();
 				}
-			} catch(Exception e2) {
+			} catch (Exception e2) {
 				logger.warn(e2.getMessage());
 			}
-			
+
 			if (respCode == 429) {
 				throw new APILimitException(e.getMessage());
 			} else if (respCode == 401) {
@@ -243,7 +238,7 @@ public class TwitterService {
 					respCode = con.getResponseCode();
 					con.disconnect();
 				}
-			} catch(Exception e2) {
+			} catch (Exception e2) {
 				logger.warn(e2.getMessage());
 			}
 
@@ -342,7 +337,7 @@ public class TwitterService {
 					respCode = con.getResponseCode();
 					con.disconnect();
 				}
-			} catch(Exception e2) {
+			} catch (Exception e2) {
 				logger.warn(e2.getMessage());
 			}
 
@@ -498,7 +493,6 @@ public class TwitterService {
 		}
 	}
 
-	
 	// inner class
 	public static class FollowerIdsResponseJSON {
 		private List<String> idsList;
