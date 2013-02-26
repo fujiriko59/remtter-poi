@@ -173,8 +173,8 @@ public class Remtter {
 					continue;
 				}
 
-				logger.info("count:" + (count - 1) + "  follower num:"
-						+ newIds.size());
+				logger.info("count:" + (count - 1) + "  id:" + userId
+						+ "  follower num:" + newIds.size());
 
 				// get userName remove this user
 				List<String> remNameList = null;
@@ -218,8 +218,7 @@ public class Remtter {
 						// send direct message
 						try {
 							setRemtterToken();
-							twitterService.sendDirectMessage(
-									userId,
+							twitterService.sendDirectMessage(userId,
 									messageBuf.toString());
 							setCrawlerToken(crawlerCount);
 						} catch (TwitterService.APILimitException e) {
