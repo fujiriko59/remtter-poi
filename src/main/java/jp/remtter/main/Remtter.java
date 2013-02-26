@@ -223,6 +223,7 @@ public class Remtter {
 							setCrawlerToken(crawlerCount);
 						} catch (TwitterService.APILimitException e) {
 							apiLimitSts = true;
+							logger.warn("send DM API is limited");
 							break;
 						} catch (TwitterService.UnAuthorizedException e) {
 							logger.warn("UnAuthorized send message");

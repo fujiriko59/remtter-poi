@@ -419,7 +419,7 @@ public class TwitterService {
 				logger.warn(e2.getMessage());
 			}
 
-			if (respCode == 429) {
+			if (respCode == 429 || respCode == 403) {
 				throw new APILimitException(e.getMessage());
 			} else if (respCode == 401) {
 				throw new UnAuthorizedException(e.getMessage());
