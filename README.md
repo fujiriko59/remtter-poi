@@ -16,3 +16,6 @@ To make eclipse project.
 
     $mvn eclipse:eclipse
 
+##properties setting
+property file: remtter-poi/conf/remtter.properties
+"conf" directory must exist in the same directory as remtter-poi.jar
