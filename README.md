@@ -6,10 +6,13 @@ Remtter-poi will send Direct Message about the follower who removed you, while y
 
 ##build
 This is maven project.
+
     $ git clone git@github.com:fujiriko59/remtter-poi.git
     $ cd remtter-poi
     $ mvn clean
     $ mvn package -Dmaven.test.skip=true
 
 To make eclipse project.
+
     $mvn eclipse:eclipse
+
