@@ -3,3 +3,5 @@ logs/
 target/
 .DS_Store
 count.txt
+.idea
+*.iml
